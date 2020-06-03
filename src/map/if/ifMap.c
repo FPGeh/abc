@@ -516,7 +516,8 @@ void If_ObjPerformMappingChoice( If_Man_t * p, If_Obj_t * pObj, int Mode, int fP
 
     // remove elementary cuts
     for ( pTemp = pObj; pTemp; pTemp = pTemp->pEquiv )
-        pTemp->pCutSet->nCuts--;
+        if ( !If_ObjIsCi(pTemp) )
+            pTemp->pCutSet->nCuts--;
 
     // update the cutset of the node
     pCutSet = pObj->pCutSet;
@@ -623,6 +624,7 @@ int If_ManPerformMappingRound( If_Man_t * p, int nCutsUsed, int Mode, int fPrepr
             else if ( If_ObjIsCi(pObj) )
             {
 //Abc_Print( 1, "processing CI %d\n", pObj->Id );
+                pObj->nVisits++; pObj->nVisitsCopy++;
                 arrTime = Tim_ManGetCiArrival( p->pManTim, pObj->IdPio );
                 If_ObjSetArrTime( pObj, arrTime );
             }
