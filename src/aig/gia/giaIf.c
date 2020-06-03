@@ -1828,6 +1828,11 @@ Gia_Man_t * Gia_ManFromIfLogic( If_Man_t * pIfMan )
         if ( If_ObjIsAnd(pIfObj) )
         {
             pCutBest = If_ObjCutBest( pIfObj );
+            if (pCutBest->nLeaves < 2) {
+                assert(pCutBest->pLeaves[0] == If_ObjId(pIfObj->pEquiv));
+                pIfObj->iCopy = pIfObj->pEquiv->iCopy;
+                continue;
+            }
             // perform sorting of cut leaves by delay, so that the slowest pin drives the fastest input of the LUT
             if ( !pIfMan->pPars->fUseTtPerm && !pIfMan->pPars->fDelayOpt && !pIfMan->pPars->fDelayOptLut && !pIfMan->pPars->fDsdBalance && 
                  !pIfMan->pPars->pLutStruct && !pIfMan->pPars->fUserRecLib && !pIfMan->pPars->fUserSesLib && !pIfMan->pPars->nGateSize && 
