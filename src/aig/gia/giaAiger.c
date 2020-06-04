@@ -707,19 +707,27 @@ Gia_Man_t * Gia_AigerReadFromMemory( char * pContents, int nFileSize, int fGiaSi
             {
                 int i, nPairs, iRepr, iNode;
                 assert( !Gia_ManHasChoices(pNew) );
-                pNew->pSibls = ABC_CALLOC( int, Gia_ManObjNum(pNew) );
                 pCur++;
                 pCurTemp = pCur + Gia_AigerReadInt(pCur) + 4;           pCur += 4;
                 nPairs = Gia_AigerReadInt(pCur);                        pCur += 4;
-                for ( i = 0; i < nPairs; i++ )
+                if ( fSkipStrash )
                 {
-                    iRepr = Gia_AigerReadInt(pCur);                     pCur += 4;
-                    iNode = Gia_AigerReadInt(pCur);                     pCur += 4;
-                    pNew->pSibls[iRepr] = iNode;
-                    assert( iRepr > iNode );
+                    pNew->pSibls = ABC_CALLOC( int, Gia_ManObjNum(pNew) );
+                    for ( i = 0; i < nPairs; i++ )
+                    {
+                        iRepr = Gia_AigerReadInt(pCur);                     pCur += 4;
+                        iNode = Gia_AigerReadInt(pCur);                     pCur += 4;
+                        pNew->pSibls[iRepr] = iNode;
+                        assert( iRepr > iNode );
+                    }
+                    if ( fVerbose ) printf( "Finished reading extension \"q\".\n" );
+                }
+                else {
+                    printf( "Cannot read extension \"q\" because AIG is rehashed. Use \"&r -s <file.aig>\".\n" );
+                    pCur += nPairs * 8;
                 }
                 assert( pCur == pCurTemp );
-                if ( fVerbose ) printf( "Finished reading extension \"q\".\n" );
+
             }
             // read switching activity
             else if ( *pCur == 'u' )
