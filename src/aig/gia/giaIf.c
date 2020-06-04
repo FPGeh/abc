@@ -1380,19 +1380,26 @@ int Gia_ManNodeIfToGia_rec( Gia_Man_t * pNew, If_Man_t * pIfMan, If_Obj_t * pIfO
     // compute the functions of the children
     for ( pTemp = pIfObj; pTemp; pTemp = pTemp->pEquiv )
     {
-        iFunc0 = Gia_ManNodeIfToGia_rec( pNew, pIfMan, pTemp->pFanin0, vVisited, fHash );
-        if ( iFunc0 == ~0 )
-            continue;
-        iFunc1 = Gia_ManNodeIfToGia_rec( pNew, pIfMan, pTemp->pFanin1, vVisited, fHash );
-        if ( iFunc1 == ~0 )
-            continue;
-        // both branches are solved
-        if ( fHash )
-            iFunc = Gia_ManHashAnd( pNew, Abc_LitNotCond(iFunc0, pTemp->fCompl0), Abc_LitNotCond(iFunc1, pTemp->fCompl1) ); 
+        if ( If_ObjIsCi(pTemp) )
+        {
+            iFunc = If_CutDataInt(If_ObjCutBest(pTemp));
+        }
         else
-            iFunc = Gia_ManAppendAnd( pNew, Abc_LitNotCond(iFunc0, pTemp->fCompl0), Abc_LitNotCond(iFunc1, pTemp->fCompl1) ); 
-        if ( pTemp->fPhase != pIfObj->fPhase )
-            iFunc = Abc_LitNot(iFunc);
+        {
+            iFunc0 = Gia_ManNodeIfToGia_rec( pNew, pIfMan, pTemp->pFanin0, vVisited, fHash );
+            if ( iFunc0 == ~0 )
+                continue;
+            iFunc1 = Gia_ManNodeIfToGia_rec( pNew, pIfMan, pTemp->pFanin1, vVisited, fHash );
+            if ( iFunc1 == ~0 )
+                continue;
+            // both branches are solved
+            if ( fHash )
+                iFunc = Gia_ManHashAnd( pNew, Abc_LitNotCond(iFunc0, pTemp->fCompl0), Abc_LitNotCond(iFunc1, pTemp->fCompl1) ); 
+            else
+                iFunc = Gia_ManAppendAnd( pNew, Abc_LitNotCond(iFunc0, pTemp->fCompl0), Abc_LitNotCond(iFunc1, pTemp->fCompl1) ); 
+            if ( pTemp->fPhase != pIfObj->fPhase )
+                iFunc = Abc_LitNot(iFunc);
+        }
         If_CutSetDataInt( pCut, iFunc );
         break;
     }
