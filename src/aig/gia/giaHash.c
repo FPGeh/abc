@@ -739,7 +739,7 @@ int Gia_ManHashMaj( Gia_Man_t * p, int iData0, int iData1, int iData2 )
 Gia_Man_t * Gia_ManRehash( Gia_Man_t * p, int fAddStrash )  
 {
     Gia_Man_t * pNew, * pTemp;
-    Gia_Obj_t * pObj;
+    Gia_Obj_t * pObj, * pSibl;
     int i;
     pNew = Gia_ManStart( Gia_ManObjNum(p) );
     pNew->pName = Abc_UtilStrsav( p->pName );
@@ -764,6 +764,22 @@ Gia_Man_t * Gia_ManRehash( Gia_Man_t * p, int fAddStrash )
     Gia_ManSetRegNum( pNew, Gia_ManRegNum(p) );
 //    printf( "Top gate is %s\n", Gia_ObjFaninC0(Gia_ManCo(pNew, 0))? "OR" : "AND" );
     pNew = Gia_ManCleanup( pTemp = pNew );
+
+    if ( Gia_ManHasChoices(p) )
+    {
+        pNew->pSibls = ABC_CALLOC( int, Gia_ManObjNum(pNew) );
+        Gia_ManForEachObj( p, pObj, i )
+        {
+            pSibl = Gia_ObjSiblObj( p, i );
+            if ( !pSibl )
+                continue;
+            assert( Gia_ObjIsAnd( pObj ) );
+            pObj = Gia_Lit2Obj( pNew, pObj->Value );
+            pSibl = Gia_Lit2Obj( pNew, pSibl->Value );
+            pNew->pSibls[Gia_ObjId(pNew, pObj)] = Gia_ObjId(pNew, pSibl);
+        }
+    }
+
     Gia_ManStop( pTemp );
     return pNew;
 }
