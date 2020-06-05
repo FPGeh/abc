@@ -274,8 +274,11 @@ int Gia_ManOrderWithBoxes_rec( Gia_Man_t * p, Gia_Obj_t * pObj, Vec_Int_t * vNod
         return 0;
     }
     if ( Gia_ObjSibl(p, Gia_ObjId(p, pObj)) )
-        if ( Gia_ManOrderWithBoxes_rec( p, Gia_ObjSiblObj(p, Gia_ObjId(p, pObj)), vNodes ) )
-            return 1;
+        if ( Gia_ManOrderWithBoxes_rec(p, Gia_ObjSiblObj(p, Gia_ObjId(p, pObj)), vNodes) )
+        {
+            p->pSibls[Gia_ObjId(p, pObj)] = 0;
+            p->pSiblsPhase[Gia_ObjId(p, pObj)] = 0;
+        }
     if ( Gia_ManOrderWithBoxes_rec( p, Gia_ObjFanin0(pObj), vNodes ) )
         return 1;
     if ( Gia_ManOrderWithBoxes_rec( p, Gia_ObjFanin1(pObj), vNodes ) )
