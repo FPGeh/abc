@@ -802,6 +802,10 @@ If_Man_t * Gia_ManToIf( Gia_Man_t * p, If_Par_t * pPars )
 //            Abc_Print( 1, "pi%d=%d\n ", If_ObjId(pIfObj), If_ObjLevel(pIfObj) );
             if ( pIfMan->nLevelMax < (int)pIfObj->Level )
                 pIfMan->nLevelMax = (int)pIfObj->Level;
+            if ( Gia_ManHasChoices(p) && p->pSiblsPhase[Gia_ObjId(p, pObj)] ) {
+                assert( pIfObj->fPhase == 0 );
+                pIfObj->fPhase = 1;
+            }
         }
         else if ( Gia_ObjIsCo(pObj) )
         {
@@ -1383,6 +1387,8 @@ int Gia_ManNodeIfToGia_rec( Gia_Man_t * pNew, If_Man_t * pIfMan, If_Obj_t * pIfO
         if ( If_ObjIsCi(pTemp) )
         {
             iFunc = If_CutDataInt(If_ObjCutBest(pTemp));
+            if ( pTemp->fPhase )
+                iFunc = Abc_LitNot(iFunc);
         }
         else
         {
@@ -1835,9 +1841,12 @@ Gia_Man_t * Gia_ManFromIfLogic( If_Man_t * pIfMan )
         if ( If_ObjIsAnd(pIfObj) )
         {
             pCutBest = If_ObjCutBest( pIfObj );
-            if (pCutBest->nLeaves < 2) {
-                assert(pCutBest->pLeaves[0] == If_ObjId(pIfObj->pEquiv));
+            if ( pCutBest->nLeaves == 1 && pIfObj->pEquiv )
+            {
+                assert( pCutBest->pLeaves[0] == If_ObjId(pIfObj->pEquiv) );
                 pIfObj->iCopy = pIfObj->pEquiv->iCopy;
+                if ( pIfObj->pEquiv->fPhase )
+                    pIfObj->iCopy = Abc_LitNot(pIfObj->iCopy);
                 continue;
             }
             // perform sorting of cut leaves by delay, so that the slowest pin drives the fastest input of the LUT

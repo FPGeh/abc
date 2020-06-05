@@ -126,6 +126,7 @@ struct Gia_Man_t_
     Gia_Rpr_t *    pReprs;        // representatives (for CIs and ANDs)
     int *          pNexts;        // next nodes in the equivalence classes
     int *          pSibls;        // next nodes in the choice nodes
+    int *          pSiblsPhase;   // phase of this node wrt repr node
     int *          pIso;          // pairs of structurally isomorphic nodes
     int            nTerLoop;      // the state where loop begins  
     int            nTerStates;    // the total number of ternary states

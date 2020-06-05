@@ -713,10 +713,17 @@ Gia_Man_t * Gia_AigerReadFromMemory( char * pContents, int nFileSize, int fGiaSi
                 if ( fSkipStrash )
                 {
                     pNew->pSibls = ABC_CALLOC( int, Gia_ManObjNum(pNew) );
+                    pNew->pSiblsPhase = ABC_CALLOC( int, Gia_ManObjNum(pNew) );
                     for ( i = 0; i < nPairs; i++ )
                     {
                         iRepr = Gia_AigerReadInt(pCur);                     pCur += 4;
                         iNode = Gia_AigerReadInt(pCur);                     pCur += 4;
+                        if (iNode < 0)
+                        {
+                            iNode = -iNode;
+                            assert( Gia_ObjIsCi(Gia_ManObj(pNew, iNode)) );
+                            pNew->pSiblsPhase[iNode] = 1;
+                        }
                         pNew->pSibls[iRepr] = iNode;
                         assert( iRepr > iNode );
                     }

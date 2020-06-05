@@ -275,10 +275,7 @@ int Gia_ManOrderWithBoxes_rec( Gia_Man_t * p, Gia_Obj_t * pObj, Vec_Int_t * vNod
     }
     if ( Gia_ObjSibl(p, Gia_ObjId(p, pObj)) )
         if ( Gia_ManOrderWithBoxes_rec(p, Gia_ObjSiblObj(p, Gia_ObjId(p, pObj)), vNodes) )
-        {
             p->pSibls[Gia_ObjId(p, pObj)] = 0;
-            p->pSiblsPhase[Gia_ObjId(p, pObj)] = 0;
-        }
     if ( Gia_ManOrderWithBoxes_rec( p, Gia_ObjFanin0(pObj), vNodes ) )
         return 1;
     if ( Gia_ManOrderWithBoxes_rec( p, Gia_ObjFanin1(pObj), vNodes ) )
@@ -397,7 +394,10 @@ Gia_Man_t * Gia_ManDupUnnormalize( Gia_Man_t * p )
     pNew->pName = Abc_UtilStrsav( p->pName );
     pNew->pSpec = Abc_UtilStrsav( p->pSpec );
     if ( Gia_ManHasChoices(p) )
+    {
         pNew->pSibls = ABC_CALLOC( int, Gia_ManObjNum(p) );
+        pNew->pSiblsPhase = ABC_CALLOC( int, Gia_ManObjNum(p) );
+    }
     Gia_ManForEachObjVec( vNodes, p, pObj, i )
     {
         if ( Gia_ObjIsBuf(pObj) )
@@ -408,8 +408,10 @@ Gia_Man_t * Gia_ManDupUnnormalize( Gia_Man_t * p )
             if ( Gia_ObjSibl(p, Gia_ObjId(p, pObj)) )
                 pNew->pSibls[Abc_Lit2Var(pObj->Value)] = Abc_Lit2Var(Gia_ObjSiblObj(p, Gia_ObjId(p, pObj))->Value);        
         }
-        else if ( Gia_ObjIsCi(pObj) )
+        else if ( Gia_ObjIsCi(pObj) ) {
             pObj->Value = Gia_ManAppendCi( pNew );
+            pNew->pSiblsPhase[Abc_Lit2Var(pObj->Value)] = p->pSiblsPhase[Gia_ObjId(p, pObj)];
+        }
         else if ( Gia_ObjIsCo(pObj) )
             pObj->Value = Gia_ManAppendCo( pNew, Gia_ObjFanin0Copy(pObj) );
         else if ( Gia_ObjIsConst0(pObj) )

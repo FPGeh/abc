@@ -768,15 +768,19 @@ Gia_Man_t * Gia_ManRehash( Gia_Man_t * p, int fAddStrash )
     if ( Gia_ManHasChoices(p) )
     {
         pNew->pSibls = ABC_CALLOC( int, Gia_ManObjNum(pNew) );
+        pNew->pSiblsPhase = ABC_CALLOC( int, Gia_ManObjNum(pNew) );
         Gia_ManForEachObj( p, pObj, i )
         {
+            if ( Gia_ObjIsCi(pObj) )
+            {
+                pNew->pSiblsPhase[Abc_Lit2Var(pObj->Value)] = p->pSiblsPhase[i];
+                continue;
+            }
+
             pSibl = Gia_ObjSiblObj( p, i );
             if ( !pSibl )
                 continue;
-            assert( Gia_ObjIsAnd( pObj ) );
-            pObj = Gia_Lit2Obj( pNew, pObj->Value );
-            pSibl = Gia_Lit2Obj( pNew, pSibl->Value );
-            pNew->pSibls[Gia_ObjId(pNew, pObj)] = Gia_ObjId(pNew, pSibl);
+            pNew->pSibls[Abc_Lit2Var(pObj->Value)] = Abc_Lit2Var(pSibl->Value);
         }
     }
 
